@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Jewellery Design Generator</title>
+    <style>
+        body { font-family: Arial; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { text-align: center; color: white; margin-bottom: 40px; }
+        .header h1 { font-size: 3rem; margin-bottom: 10px; }
+        .section { background: white; border-radius: 15px; padding: 30px; margin-bottom: 30px; }
+        .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; }
+        input, textarea, select { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; }
+        .btn { background: linear-gradient(135deg, #5a6cf3 0%, #7c3aed 100%); color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; }
+        .btn:hover { transform: translateY(-2px); }
+        .file-upload { border: 2px dashed #ccc; padding: 40px; text-align: center; cursor: pointer; border-radius: 8px; }
+        .designs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 30px; }
+        .design-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .design-image { width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 15px; }
+        .btn-small { padding: 6px 12px; font-size: 14px; text-decoration: none; border-radius: 6px; background: #28a745; color: white; margin-right: 10px; }
+        .btn-delete { background: #dc3545; }
+        .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .alert-success { background: #d4edda; color: #155724; }
+        .alert-error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💎 Jewellery Design Generator</h1>
+            <p>Create bespoke jewellery designs from text prompts or images</p>
+        </div>
+
+        <div class="two-column">
+            <div class="section">
+                <h2>✨ Generate from Text</h2>
+                <form id="textForm">
+                    <div class="form-group">
+                        <label>Design Description:</label>
+                        <textarea id="textPrompt" placeholder="Describe your jewellery design..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Jewellery Type:</label>
+                        <select id="textJewelleryType">
+                            <option value="ring">Ring</option>
+                            <option value="pendant">Pendant</option>
+                            <option value="bracelet">Bracelet</option>
+                            <option value="earring">Earrings</option>
+                            <option value="necklace">Necklace</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn">Generate Design</button>
+                </form>
+            </div>
+
+            <div class="section">
+                <h2>🎨 Generate from Image</h2>
+                <form id="imageForm">
+                    <div class="form-group">
+                        <label>Upload Image:</label>
+                        <div class="file-upload" onclick="document.getElementById('imageFile').click()">
+                            <input type="file" id="imageFile" accept="image/*" style="display: none;">
+                            <div>Click to upload or drag & drop</div>
+                            <div>PNG, JPG up to 10MB</div>
+                        </div>
+                        <img id="imagePreview" style="max-width: 200px; display: none; margin-top: 15px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Jewellery Type:</label>
+                        <select id="imageJewelleryType">
+                            <option value="ring">Ring</option>
+                            <option value="pendant">Pendant</option>
+                            <option value="bracelet">Bracelet</option>
+                            <option value="earring">Earrings</option>
+                            <option value="necklace">Necklace</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn" id="imageSubmit" disabled>Generate Design</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <div class="section">
+            <h2>🏆 Your Designs</h2>
+            <div id="designsGrid" class="designs-grid"></div>
+        </div>
+    </div>
+
+    <script>
+        let selectedImageFile = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDesigns();
+            
+            document.getElementById('textForm').addEventListener('submit', handleTextSubmission);
+            document.getElementById('imageForm').addEventListener('submit', handleImageSubmission);
+            document.getElementById('imageFile').addEventListener('change', handleFileSelect);
+        });
+
+        async function handleTextSubmission(e) {
+            e.preventDefault();
+            const prompt = document.getElementById('textPrompt').value.trim();
+            const jewelleryType = document.getElementById('textJewelleryType').value;
+            
+            if (!prompt) {
+                showAlert('Please enter a design description', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/generate-from-text', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: prompt, jewellery_type: jewelleryType })
+                });
+                
+                if (response.ok) {
+                    showAlert('Design generated successfully!', 'success');
+                    loadDesigns();
+                    document.getElementById('textForm').reset();
+                } else {
+                    throw new Error('Failed to generate design');
+                }
+            } catch (error) {
+                showAlert('Failed to generate design. Please try again.', 'error');
+            }
+        }
+
+        async function handleImageSubmission(e) {
+            e.preventDefault();
+            if (!selectedImageFile) {
+                showAlert('Please select an image first', 'error');
+                return;
+            }
+            
+            const jewelleryType = document.getElementById('imageJewelleryType').value;
+            const base64Image = await fileToBase64(selectedImageFile);
+            
+            try {
+                const response = await fetch('/api/generate-from-image', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image_data: base64Image, jewellery_type: jewelleryType })
+                });
+                
+                if (response.ok) {
+                    showAlert('Design generated successfully!', 'success');
+                    loadDesigns();
+                    document.getElementById('imageForm').reset();
+                    document.getElementById('imagePreview').style.display = 'none';
+                    selectedImageFile = null;
+                    document.getElementById('imageSubmit').disabled = true;
+                } else {
+                    throw new Error('Failed to generate design');
+                }
+            } catch (error) {
+                showAlert('Failed to generate design. Please try again.', 'error');
+            }
+        }
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                selectedImageFile = file;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+                document.getElementById('imageSubmit').disabled = false;
+            }
+        }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        async function loadDesigns() {
+            try {
+                const response = await fetch('/api/designs');
+                const designs = await response.json();
+                const grid = document.getElementById('designsGrid');
+                
+                if (designs.length === 0) {
+                    grid.innerHTML = '<p>No designs yet. Create your first design above!</p>';
+                    return;
+                }
+                
+                grid.innerHTML = designs.map(design => `
+                    <div class="design-card">
+                        <img src="${design.preview_url}" alt="${design.prompt}" class="design-image">
+                        <h3>${design.jewellery_type.charAt(0).toUpperCase() + design.jewellery_type.slice(1)}</h3>
+                        <p><em>"${design.prompt}"</em></p>
+                        <div>
+                            <a href="${design.model_url}" download class="btn-small">Download 3D Model</a>
+                            <button onclick="deleteDesign('${design.id}')" class="btn-small btn-delete">Delete</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                showAlert('Failed to load designs', 'error');
+            }
+        }
+
+        async function deleteDesign(designId) {
+            if (confirm('Are you sure you want to delete this design?')) {
+                try {
+                    const response = await fetch(`/api/designs/${designId}`, { method: 'DELETE' });
+                    if (response.ok) {
+                        showAlert('Design deleted successfully', 'success');
+                        loadDesigns();
+                    }
+                } catch (error) {
+                    showAlert('Failed to delete design', 'error');
+                }
+            }
+        }
+
+        function showAlert(message, type) {
+            const container = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            container.appendChild(alert);
+            setTimeout(() => alert.remove(), 5000);
+        }
+    </script>
+</body>
+</html>
