@@ -1,0 +1,234 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 220 13% 18%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 220 13% 18%;
+    --radius: 0.75rem;
+
+    /* Custom VICO color palette */
+    --vico-primary: 220 13% 18%;
+    --vico-primary-light: 220 13% 25%;
+    --vico-primary-dark: 220 13% 12%;
+    --vico-accent: 220 70% 50%;
+    --vico-accent-light: 220 70% 60%;
+    --vico-gold: 45 100% 51%;
+    --vico-gold-light: 45 100% 65%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .glass-effect {
+    backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .card-hover {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  }
+
+  .smooth-transition {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Enhanced backdrop blur utilities */
+  .backdrop-blur-xl {
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+
+  .backdrop-blur-2xl {
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+  }
+
+  /* VICO Brand Colors */
+  .bg-vico-primary {
+    background-color: hsl(var(--vico-primary));
+  }
+
+  .bg-vico-primary-light {
+    background-color: hsl(var(--vico-primary-light));
+  }
+
+  .bg-vico-primary-dark {
+    background-color: hsl(var(--vico-primary-dark));
+  }
+
+  .bg-vico-accent {
+    background-color: hsl(var(--vico-accent));
+  }
+
+  .bg-vico-accent-light {
+    background-color: hsl(var(--vico-accent-light));
+  }
+
+  .bg-vico-gold {
+    background-color: hsl(var(--vico-gold));
+  }
+
+  .text-vico-primary {
+    color: hsl(var(--vico-primary));
+  }
+
+  .text-vico-accent {
+    color: hsl(var(--vico-accent));
+  }
+
+  .text-vico-gold {
+    color: hsl(var(--vico-gold));
+  }
+
+  .border-vico-primary {
+    border-color: hsl(var(--vico-primary));
+  }
+
+  .border-vico-accent {
+    border-color: hsl(var(--vico-accent));
+  }
+
+  /* Custom Animations */
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0px) rotate(0deg);
+      opacity: 0.3;
+    }
+    50% {
+      transform: translateY(-20px) rotate(180deg);
+      opacity: 0.8;
+    }
+  }
+
+  @keyframes gradient {
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulse-slow {
+    0%,
+    100% {
+      opacity: 0.4;
+    }
+    50% {
+      opacity: 0.6;
+    }
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient 3s ease infinite;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 1s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 1s ease-out;
+  }
+
+  .animate-slide-up-delay {
+    animation: slide-up 1s ease-out 0.2s both;
+  }
+
+  .animate-slide-up-delay-2 {
+    animation: slide-up 1s ease-out 0.4s both;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse-slow 4s ease-in-out infinite;
+  }
+}
