@@ -1,10 +1,14 @@
 import { v2 as cloudinary } from "cloudinary"
+import { Buffer } from "buffer"
 
-cloudinary.config({
-  cloud_name: "df501lz8c",
-  api_key: "498795378121457",
-  api_secret: "sM5c4Fl6YioihetF1f7IlESHDAs",
-})
+// Only configure cloudinary on the server side
+if (typeof window === "undefined") {
+  cloudinary.config({
+    cloud_name: "df501lz8c",
+    api_key: "498795378121457",
+    api_secret: "sM5c4Fl6YioihetF1f7IlESHDAs",
+  })
+}
 
 export async function uploadGemstoneToCloudinary(
   file: File,
@@ -14,6 +18,11 @@ export async function uploadGemstoneToCloudinary(
     id?: string
   },
 ) {
+  // Ensure this only runs on server side
+  if (typeof window !== "undefined") {
+    throw new Error("This function can only be called on the server side")
+  }
+
   try {
     // Convert file to base64
     const bytes = await file.arrayBuffer()
@@ -73,6 +82,10 @@ export async function uploadGemstoneToCloudinary(
 }
 
 export async function deleteGemstoneFromCloudinary(publicId: string) {
+  if (typeof window !== "undefined") {
+    throw new Error("This function can only be called on the server side")
+  }
+
   try {
     const result = await cloudinary.uploader.destroy(publicId)
     return { success: result.result === "ok" }
@@ -84,6 +97,10 @@ export async function deleteGemstoneFromCloudinary(publicId: string) {
 
 // Get all images from a specific gemstone folder
 export async function getGemstoneImages(gemType: string) {
+  if (typeof window !== "undefined") {
+    throw new Error("This function can only be called on the server side")
+  }
+
   try {
     const result = await cloudinary.search
       .expression(`folder:vico-gemstones/${gemType}`)

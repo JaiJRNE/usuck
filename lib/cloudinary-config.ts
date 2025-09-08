@@ -1,12 +1,7 @@
-import { v2 as cloudinary } from "cloudinary"
-
-cloudinary.config({
-  cloud_name: "df501lz8c",
-  api_key: "498795378121457",
-  api_secret: "sM5c4Fl6YioihetF1f7IlESHDAs",
-})
-
-export { cloudinary }
+// Client-side Cloudinary configuration and helpers
+export const CLOUDINARY_CONFIG = {
+  cloudName: "df501lz8c",
+}
 
 // Cloudinary transformation presets optimized for gemstones
 export const GEMSTONE_TRANSFORMATIONS = {
@@ -22,7 +17,7 @@ export const GEMSTONE_TRANSFORMATIONS = {
 
 // Helper function to build Cloudinary URLs
 export function buildCloudinaryUrl(publicId: string, transformation: string) {
-  return `https://res.cloudinary.com/df501lz8c/image/upload/${transformation}/${publicId}`
+  return `https://res.cloudinary.com/${CLOUDINARY_CONFIG.cloudName}/image/upload/${transformation}/${publicId}`
 }
 
 // Get optimized URL for different use cases

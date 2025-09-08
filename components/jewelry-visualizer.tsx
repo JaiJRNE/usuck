@@ -7,8 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Slider } from "@/components/ui/slider"
 import { Label } from "@/components/ui/label"
-import { CloudinaryImage } from "./cloudinary-image"
-import { Gem, BellRingIcon as Ring, Heart, Star, Crown, Sparkles, MessageCircle, Download } from "lucide-react"
+import { Gem, Syringe as Ring, Heart, Star, Crown, Sparkles, MessageCircle, Download } from "lucide-react"
 import Image from "next/image"
 
 interface JewelryVisualizerProps {
@@ -193,24 +192,13 @@ Please provide a detailed quote and timeline.`
           <CardContent>
             <div className="flex items-center space-x-4">
               <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100">
-                {gemstone.cloudinaryId ? (
-                  <CloudinaryImage
-                    publicId={gemstone.cloudinaryId}
-                    alt={gemstone.name}
-                    transformation="thumbnail"
-                    width={80}
-                    height={80}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <Image
-                    src={gemstone.image || "/placeholder.svg"}
-                    alt={gemstone.name}
-                    width={80}
-                    height={80}
-                    className="w-full h-full object-cover"
-                  />
-                )}
+                <Image
+                  src={gemstone.image || "/placeholder.svg"}
+                  alt={gemstone.name}
+                  width={80}
+                  height={80}
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold text-lg">{gemstone.name}</h3>
