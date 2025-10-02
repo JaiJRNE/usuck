@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { ChevronDown, Menu, X } from "lucide-react"
+import { ChevronDown, Menu, X, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
@@ -13,10 +13,7 @@ export function Navigation() {
   const [scrolled, setScrolled] = useState(false)
   const pathname = usePathname()
 
-  // Determine if we're on the homepage (which has the dark video hero)
   const isHomePage = pathname === "/"
-
-  // On non-homepage, always use the scrolled (solid) styling
   const shouldUseTransparentNav = isHomePage && !scrolled
 
   useEffect(() => {
@@ -50,7 +47,6 @@ export function Navigation() {
                 }`}
                 priority
               />
-              {/* Fallback text for when image doesn't load */}
               <div className="sr-only">
                 <div
                   className={`text-2xl font-semibold tracking-tight transition-colors duration-300 ${
@@ -135,6 +131,38 @@ export function Navigation() {
               Contact
             </Link>
 
+            {/* Admin Link - Only show in development or when authenticated */}
+            {process.env.NODE_ENV === "development" && (
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  className={`flex items-center font-medium text-sm smooth-transition ${
+                    shouldUseTransparentNav
+                      ? "text-white/90 hover:text-white drop-shadow-md"
+                      : "text-gray-700 hover:text-vico-primary"
+                  }`}
+                >
+                  Admin
+                  <ChevronDown className="ml-1 h-3 w-3" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="mt-2 bg-white/95 backdrop-blur-xl border-0 shadow-xl rounded-xl">
+                  <DropdownMenuItem asChild className="hover:bg-gray-50/80 rounded-lg mx-1">
+                    <Link
+                      href="/admin/bulk-products"
+                      className="font-medium text-gray-700 hover:text-vico-primary flex items-center"
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      Bulk Upload
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="hover:bg-gray-50/80 rounded-lg mx-1">
+                    <Link href="/admin/add-product" className="font-medium text-gray-700 hover:text-vico-primary">
+                      Add Single Product
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+
             <Button
               asChild
               className={`rounded-full px-6 font-medium transition-all duration-300 ${
@@ -167,7 +195,6 @@ export function Navigation() {
       {isOpen && (
         <div className="md:hidden bg-white/95 backdrop-blur-xl border-t border-gray-100/50 shadow-lg">
           <div className="px-6 py-6 space-y-4">
-            {/* Mobile Logo */}
             <div className="flex justify-center pb-4 border-b border-gray-200">
               <Image
                 src="/vico-logo.webp"
@@ -225,6 +252,31 @@ export function Navigation() {
             >
               Contact
             </Link>
+
+            {/* Admin Links - Mobile */}
+            {process.env.NODE_ENV === "development" && (
+              <div className="space-y-3 pt-4 border-t border-gray-200">
+                <div className="text-red-600 font-semibold">Admin</div>
+                <div className="pl-4 space-y-3">
+                  <Link
+                    href="/admin/bulk-products"
+                    onClick={() => setIsOpen(false)}
+                    className="block text-gray-600 hover:text-red-600 smooth-transition flex items-center"
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Bulk Upload
+                  </Link>
+                  <Link
+                    href="/admin/add-product"
+                    onClick={() => setIsOpen(false)}
+                    className="block text-gray-600 hover:text-red-600 smooth-transition"
+                  >
+                    Add Single Product
+                  </Link>
+                </div>
+              </div>
+            )}
+
             <div className="pt-4 border-t border-gray-200">
               <Button
                 asChild
