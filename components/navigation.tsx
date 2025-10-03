@@ -131,37 +131,35 @@ export function Navigation() {
               Contact
             </Link>
 
-            {/* Admin Link - Only show in development or when authenticated */}
-            {process.env.NODE_ENV === "development" && (
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  className={`flex items-center font-medium text-sm smooth-transition ${
-                    shouldUseTransparentNav
-                      ? "text-white/90 hover:text-white drop-shadow-md"
-                      : "text-gray-700 hover:text-vico-primary"
-                  }`}
-                >
-                  Admin
-                  <ChevronDown className="ml-1 h-3 w-3" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="mt-2 bg-white/95 backdrop-blur-xl border-0 shadow-xl rounded-xl">
-                  <DropdownMenuItem asChild className="hover:bg-gray-50/80 rounded-lg mx-1">
-                    <Link
-                      href="/admin/bulk-products"
-                      className="font-medium text-gray-700 hover:text-vico-primary flex items-center"
-                    >
-                      <Upload className="h-4 w-4 mr-2" />
-                      Bulk Upload
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="hover:bg-gray-50/80 rounded-lg mx-1">
-                    <Link href="/admin/add-product" className="font-medium text-gray-700 hover:text-vico-primary">
-                      Add Single Product
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+            {/* Admin Dropdown - Always visible */}
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                className={`flex items-center font-medium text-sm smooth-transition ${
+                  shouldUseTransparentNav
+                    ? "text-white/90 hover:text-white drop-shadow-md"
+                    : "text-gray-700 hover:text-vico-primary"
+                }`}
+              >
+                Admin
+                <ChevronDown className="ml-1 h-3 w-3" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="mt-2 bg-white/95 backdrop-blur-xl border-0 shadow-xl rounded-xl">
+                <DropdownMenuItem asChild className="hover:bg-gray-50/80 rounded-lg mx-1">
+                  <Link
+                    href="/admin/bulk-products"
+                    className="font-medium text-gray-700 hover:text-vico-primary flex items-center"
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Bulk Upload
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="hover:bg-gray-50/80 rounded-lg mx-1">
+                  <Link href="/admin/add-product" className="font-medium text-gray-700 hover:text-vico-primary">
+                    Add Single Product
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             <Button
               asChild
@@ -254,28 +252,26 @@ export function Navigation() {
             </Link>
 
             {/* Admin Links - Mobile */}
-            {process.env.NODE_ENV === "development" && (
-              <div className="space-y-3 pt-4 border-t border-gray-200">
-                <div className="text-red-600 font-semibold">Admin</div>
-                <div className="pl-4 space-y-3">
-                  <Link
-                    href="/admin/bulk-products"
-                    onClick={() => setIsOpen(false)}
-                    className="block text-gray-600 hover:text-red-600 smooth-transition flex items-center"
-                  >
-                    <Upload className="h-4 w-4 mr-2" />
-                    Bulk Upload
-                  </Link>
-                  <Link
-                    href="/admin/add-product"
-                    onClick={() => setIsOpen(false)}
-                    className="block text-gray-600 hover:text-red-600 smooth-transition"
-                  >
-                    Add Single Product
-                  </Link>
-                </div>
+            <div className="space-y-3 pt-4 border-t border-gray-200">
+              <div className="text-red-600 font-semibold">Admin</div>
+              <div className="pl-4 space-y-3">
+                <Link
+                  href="/admin/bulk-products"
+                  onClick={() => setIsOpen(false)}
+                  className="block text-gray-600 hover:text-red-600 smooth-transition flex items-center"
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Bulk Upload
+                </Link>
+                <Link
+                  href="/admin/add-product"
+                  onClick={() => setIsOpen(false)}
+                  className="block text-gray-600 hover:text-red-600 smooth-transition"
+                >
+                  Add Single Product
+                </Link>
               </div>
-            )}
+            </div>
 
             <div className="pt-4 border-t border-gray-200">
               <Button
