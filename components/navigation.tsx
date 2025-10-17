@@ -1,291 +1,184 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { usePathname } from "next/navigation"
+import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { ChevronDown, Menu, X, Upload } from "lucide-react"
+import { Menu, X, Search, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
-  const pathname = usePathname()
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
 
-  const isHomePage = pathname === "/"
-  const shouldUseTransparentNav = isHomePage && !scrolled
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50)
-    }
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+  const toggleDropdown = (menu: string) => {
+    setActiveDropdown(activeDropdown === menu ? null : menu)
+  }
 
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-out ${
-        shouldUseTransparentNav
-          ? "bg-transparent backdrop-blur-sm"
-          : "bg-white/95 backdrop-blur-xl shadow-lg border-b border-gray-100/50"
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
+    <nav className="sticky top-0 z-50 bg-white shadow-md">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center group">
-            <div className="relative">
-              <Image
-                src="/vico-logo.webp"
-                alt="VICO by Vaibhav International"
-                width={120}
-                height={40}
-                className={`h-10 w-auto transition-all duration-300 ${
-                  shouldUseTransparentNav ? "brightness-0 invert drop-shadow-lg" : "brightness-100 contrast-100"
-                }`}
-                priority
-              />
-              <div className="sr-only">
-                <div
-                  className={`text-2xl font-semibold tracking-tight transition-colors duration-300 ${
-                    shouldUseTransparentNav ? "text-white drop-shadow-lg" : "text-vico-primary"
-                  }`}
-                >
-                  VICO
-                </div>
-                <div
-                  className={`ml-2 text-sm font-medium transition-colors duration-300 ${
-                    shouldUseTransparentNav ? "text-white/90 drop-shadow-md" : "text-gray-600"
-                  }`}
-                >
-                  by Vaibhav
-                </div>
-              </div>
+          <Link href="/" className="flex items-center space-x-3">
+            <div className="relative w-12 h-12">
+              <Image src="/vico-logo.webp" alt="VICO Gemstones" fill className="object-contain" priority />
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-gray-900">VICO</div>
+              <div className="text-xs text-gray-600 -mt-1">Fine Gemstones</div>
             </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link
-              href="/"
-              className={`font-medium text-sm smooth-transition ${
-                shouldUseTransparentNav
-                  ? "text-white/90 hover:text-white drop-shadow-md"
-                  : "text-gray-700 hover:text-vico-primary"
-              }`}
-            >
+          <div className="hidden md:flex items-center space-x-8">
+            <Link href="/" className="text-gray-700 hover:text-blue-600 transition-colors">
               Home
             </Link>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                className={`flex items-center font-medium text-sm smooth-transition ${
-                  shouldUseTransparentNav
-                    ? "text-white/90 hover:text-white drop-shadow-md"
-                    : "text-gray-700 hover:text-vico-primary"
-                }`}
+            {/* Gemstones Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => toggleDropdown("gemstones")}
+                className="flex items-center text-gray-700 hover:text-blue-600 transition-colors"
               >
                 Gemstones
-                <ChevronDown className="ml-1 h-3 w-3" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="mt-2 bg-white/95 backdrop-blur-xl border-0 shadow-xl rounded-xl">
-                <DropdownMenuItem asChild className="hover:bg-gray-50/80 rounded-lg mx-1">
-                  <Link href="/sapphires/basic-search" className="font-medium text-gray-700 hover:text-vico-primary">
+                <ChevronDown className="ml-1 h-4 w-4" />
+              </button>
+              {activeDropdown === "gemstones" && (
+                <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-md shadow-lg py-2 z-50">
+                  <Link
+                    href="/sapphires"
+                    className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                    onClick={() => setActiveDropdown(null)}
+                  >
                     Sapphires
                   </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="hover:bg-gray-50/80 rounded-lg mx-1">
-                  <Link href="/rubies/basic-search" className="font-medium text-gray-700 hover:text-vico-primary">
+                  <Link
+                    href="/rubies"
+                    className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                    onClick={() => setActiveDropdown(null)}
+                  >
                     Rubies
                   </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="hover:bg-gray-50/80 rounded-lg mx-1">
-                  <Link href="/emeralds/basic-search" className="font-medium text-gray-700 hover:text-vico-primary">
+                  <Link
+                    href="/emeralds"
+                    className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                    onClick={() => setActiveDropdown(null)}
+                  >
                     Emeralds
                   </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                </div>
+              )}
+            </div>
 
-            <Link
-              href="/about"
-              className={`font-medium text-sm smooth-transition ${
-                shouldUseTransparentNav
-                  ? "text-white/90 hover:text-white drop-shadow-md"
-                  : "text-gray-700 hover:text-vico-primary"
-              }`}
-            >
+            <Link href="/about" className="text-gray-700 hover:text-blue-600 transition-colors">
               About
             </Link>
-
-            <Link
-              href="/contact"
-              className={`font-medium text-sm smooth-transition ${
-                shouldUseTransparentNav
-                  ? "text-white/90 hover:text-white drop-shadow-md"
-                  : "text-gray-700 hover:text-vico-primary"
-              }`}
-            >
+            <Link href="/contact" className="text-gray-700 hover:text-blue-600 transition-colors">
               Contact
             </Link>
 
-            {/* Admin Dropdown - Always visible */}
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                className={`flex items-center font-medium text-sm smooth-transition ${
-                  shouldUseTransparentNav
-                    ? "text-white/90 hover:text-white drop-shadow-md"
-                    : "text-gray-700 hover:text-vico-primary"
-                }`}
+            {/* Admin Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => toggleDropdown("admin")}
+                className="flex items-center text-gray-700 hover:text-blue-600 transition-colors"
               >
                 Admin
-                <ChevronDown className="ml-1 h-3 w-3" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="mt-2 bg-white/95 backdrop-blur-xl border-0 shadow-xl rounded-xl">
-                <DropdownMenuItem asChild className="hover:bg-gray-50/80 rounded-lg mx-1">
+                <ChevronDown className="ml-1 h-4 w-4" />
+              </button>
+              {activeDropdown === "admin" && (
+                <div className="absolute top-full right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-2 z-50">
                   <Link
                     href="/admin/bulk-products"
-                    className="font-medium text-gray-700 hover:text-vico-primary flex items-center"
+                    className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                    onClick={() => setActiveDropdown(null)}
                   >
-                    <Upload className="h-4 w-4 mr-2" />
-                    Bulk Upload
+                    VICO Master Upload
                   </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="hover:bg-gray-50/80 rounded-lg mx-1">
-                  <Link href="/admin/add-product" className="font-medium text-gray-700 hover:text-vico-primary">
+                  <Link
+                    href="/admin/add-product"
+                    className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                    onClick={() => setActiveDropdown(null)}
+                  >
                     Add Single Product
                   </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <Button
-              asChild
-              className={`rounded-full px-6 font-medium transition-all duration-300 ${
-                shouldUseTransparentNav
-                  ? "bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-md hover:scale-105"
-                  : "bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl"
-              }`}
-            >
-              <Link href="/contact">Get Quote</Link>
-            </Button>
-          </nav>
-
-          {/* Mobile Navigation Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className={`md:hidden transition-colors duration-300 ${
-              shouldUseTransparentNav
-                ? "text-white hover:text-white hover:bg-white/20"
-                : "text-gray-700 hover:text-vico-primary hover:bg-gray-100"
-            }`}
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </Button>
-        </div>
-      </div>
-
-      {/* Mobile Menu */}
-      {isOpen && (
-        <div className="md:hidden bg-white/95 backdrop-blur-xl border-t border-gray-100/50 shadow-lg">
-          <div className="px-6 py-6 space-y-4">
-            <div className="flex justify-center pb-4 border-b border-gray-200">
-              <Image
-                src="/vico-logo.webp"
-                alt="VICO by Vaibhav International"
-                width={100}
-                height={33}
-                className="h-8 w-auto"
-              />
+                </div>
+              )}
             </div>
 
-            <Link
-              href="/"
-              onClick={() => setIsOpen(false)}
-              className="block text-gray-700 hover:text-red-600 font-medium smooth-transition"
-            >
+            <Button size="sm">
+              <Search className="h-4 w-4 mr-2" />
+              Search
+            </Button>
+          </div>
+
+          {/* Mobile menu button */}
+          <button className="md:hidden" onClick={() => setIsOpen(!isOpen)}>
+            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
+
+        {/* Mobile Navigation */}
+        {isOpen && (
+          <div className="md:hidden py-4 space-y-4">
+            <Link href="/" className="block text-gray-700 hover:text-blue-600" onClick={() => setIsOpen(false)}>
               Home
             </Link>
-            <div className="space-y-3">
-              <div className="text-red-600 font-semibold">Gemstones</div>
-              <div className="pl-4 space-y-3">
-                <Link
-                  href="/sapphires/basic-search"
-                  onClick={() => setIsOpen(false)}
-                  className="block text-gray-600 hover:text-red-600 smooth-transition"
-                >
-                  Sapphires
-                </Link>
-                <Link
-                  href="/rubies/basic-search"
-                  onClick={() => setIsOpen(false)}
-                  className="block text-gray-600 hover:text-red-600 smooth-transition"
-                >
-                  Rubies
-                </Link>
-                <Link
-                  href="/emeralds/basic-search"
-                  onClick={() => setIsOpen(false)}
-                  className="block text-gray-600 hover:text-red-600 smooth-transition"
-                >
-                  Emeralds
-                </Link>
-              </div>
+            <div className="space-y-2">
+              <div className="font-semibold text-gray-900">Gemstones</div>
+              <Link
+                href="/sapphires"
+                className="block pl-4 text-gray-700 hover:text-blue-600"
+                onClick={() => setIsOpen(false)}
+              >
+                Sapphires
+              </Link>
+              <Link
+                href="/rubies"
+                className="block pl-4 text-gray-700 hover:text-blue-600"
+                onClick={() => setIsOpen(false)}
+              >
+                Rubies
+              </Link>
+              <Link
+                href="/emeralds"
+                className="block pl-4 text-gray-700 hover:text-blue-600"
+                onClick={() => setIsOpen(false)}
+              >
+                Emeralds
+              </Link>
             </div>
-            <Link
-              href="/about"
-              onClick={() => setIsOpen(false)}
-              className="block text-gray-700 hover:text-red-600 font-medium smooth-transition"
-            >
+            <Link href="/about" className="block text-gray-700 hover:text-blue-600" onClick={() => setIsOpen(false)}>
               About
             </Link>
-            <Link
-              href="/contact"
-              onClick={() => setIsOpen(false)}
-              className="block text-gray-700 hover:text-red-600 font-medium smooth-transition"
-            >
+            <Link href="/contact" className="block text-gray-700 hover:text-blue-600" onClick={() => setIsOpen(false)}>
               Contact
             </Link>
-
-            {/* Admin Links - Mobile */}
-            <div className="space-y-3 pt-4 border-t border-gray-200">
-              <div className="text-red-600 font-semibold">Admin</div>
-              <div className="pl-4 space-y-3">
-                <Link
-                  href="/admin/bulk-products"
-                  onClick={() => setIsOpen(false)}
-                  className="block text-gray-600 hover:text-red-600 smooth-transition flex items-center"
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Bulk Upload
-                </Link>
-                <Link
-                  href="/admin/add-product"
-                  onClick={() => setIsOpen(false)}
-                  className="block text-gray-600 hover:text-red-600 smooth-transition"
-                >
-                  Add Single Product
-                </Link>
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-gray-200">
-              <Button
-                asChild
-                className="w-full bg-red-600 hover:bg-red-700 text-white rounded-full font-medium shadow-lg"
+            <div className="space-y-2">
+              <div className="font-semibold text-gray-900">Admin</div>
+              <Link
+                href="/admin/bulk-products"
+                className="block pl-4 text-gray-700 hover:text-blue-600"
+                onClick={() => setIsOpen(false)}
               >
-                <Link href="/contact" onClick={() => setIsOpen(false)}>
-                  Get Quote
-                </Link>
-              </Button>
+                VICO Master Upload
+              </Link>
+              <Link
+                href="/admin/add-product"
+                className="block pl-4 text-gray-700 hover:text-blue-600"
+                onClick={() => setIsOpen(false)}
+              >
+                Add Single Product
+              </Link>
             </div>
+            <Button className="w-full" size="sm">
+              <Search className="h-4 w-4 mr-2" />
+              Search
+            </Button>
           </div>
-        </div>
-      )}
-    </header>
+        )}
+      </div>
+    </nav>
   )
 }
