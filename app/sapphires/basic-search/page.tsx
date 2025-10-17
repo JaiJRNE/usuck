@@ -5,97 +5,46 @@ import { GemstoneFilters } from "@/components/gemstone-filters"
 import { GemstoneCard } from "@/components/gemstone-card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search, Grid, List, SlidersHorizontal } from 'lucide-react'
+import { Search, Grid, List, SlidersHorizontal } from "lucide-react"
+import { supabase } from "@/lib/supabase-client"
 
-// Sample sapphire data with real images
-const sampleSapphires = [
-  {
-    id: "sap-001",
-    name: "Ceylon Blue Sapphire",
-    shape: "Oval",
-    carat: 2.45,
-    color: "Blue",
-    clarity: "VS",
-    treatment: "Heated",
-    origin: "Sri Lanka",
-    price: 3500,
-    image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Ceylon%20Blue%20Sapphire-lT1K3fUD0nbOHB3Lg4uVxlASSq3Eqv.jpeg",
-    dimensions: "8.2 x 6.1 x 4.8 mm",
-    gemType: "sapphires",
-  },
-  {
-    id: "sap-002",
-    name: "Padparadscha Sapphire",
-    shape: "Cushion",
-    carat: 1.85,
-    color: "Padparadscha",
-    clarity: "VVS",
-    treatment: "Unheated",
-    origin: "Madagascar",
-    price: 8500,
-    image: "/placeholder.svg?height=300&width=300&text=Padparadscha+Sapphire",
-    dimensions: "7.1 x 6.8 x 4.2 mm",
-    gemType: "sapphires",
-  },
-  {
-    id: "sap-003",
-    name: "Yellow Sapphire",
-    shape: "Round",
-    carat: 3.12,
-    color: "Yellow",
-    clarity: "VS",
-    treatment: "Heated",
-    origin: "Thailand",
-    price: 2800,
-    image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Yellow%20Sapphire-2iP82g2GvtBKwY56NmNHPNyHeDbFKP.jpeg",
-    dimensions: "8.8 x 8.8 x 5.4 mm",
-    gemType: "sapphires",
-  },
-  {
-    id: "sap-004",
-    name: "Pink Sapphire",
-    shape: "Pear",
-    carat: 1.67,
-    color: "Pink",
-    clarity: "VVS",
-    treatment: "Unheated",
-    origin: "Myanmar",
-    price: 6200,
-    image: "/placeholder.svg?height=300&width=300&text=Pink+Sapphire",
-    dimensions: "8.9 x 6.2 x 4.1 mm",
-    gemType: "sapphires",
-  },
-  {
-    id: "sap-005",
-    name: "White Sapphire",
-    shape: "Princess",
-    carat: 2.89,
-    color: "White",
-    clarity: "VVS",
-    treatment: "None",
-    origin: "Sri Lanka",
-    price: 1800,
-    image: "/placeholder.svg?height=300&width=300&text=White+Sapphire",
-    dimensions: "7.5 x 7.5 x 5.2 mm",
-    gemType: "sapphires",
-  },
-  {
-    id: "sap-006",
-    name: "Purple Sapphire",
-    shape: "Emerald Cut",
-    carat: 2.23,
-    color: "Purple",
-    clarity: "VS",
-    treatment: "Heated",
-    origin: "Madagascar",
-    price: 4100,
-    image: "/placeholder.svg?height=300&width=300&text=Purple+Sapphire",
-    dimensions: "8.1 x 6.3 x 4.7 mm",
-    gemType: "sapphires",
-  },
-]
+export const revalidate = 60 // Revalidate every 60 seconds
 
-export default function SapphireSearchPage() {
+async function getSapphires() {
+  const { data, error } = await supabase
+    .from("gemstones")
+    .select("*")
+    .eq("gem_type", "sapphires")
+    .order("created_at", { ascending: false })
+
+  if (error) {
+    console.error("Error fetching sapphires:", error)
+    return []
+  }
+
+  return (
+    data?.map((gem) => ({
+      id: gem.id,
+      name: gem.name,
+      gemType: gem.gem_type as "sapphires",
+      shape: gem.shape,
+      carat: Number(gem.carat),
+      color: gem.color,
+      clarity: gem.clarity,
+      treatment: gem.treatment,
+      origin: gem.origin,
+      price: Number(gem.price),
+      dimensions: gem.dimensions || "",
+      description: gem.description || "",
+      image: gem.image || "/placeholder.svg?height=400&width=400",
+      cloudinaryId: gem.cloudinary_id || undefined,
+      specifications: gem.specifications || undefined,
+    })) || []
+  )
+}
+
+export default async function SapphiresSearchPage() {
+  const sapphires = await getSapphires()
   const [filters, setFilters] = useState<any>({
     shapes: [],
     caratRange: [0.5, 10],
@@ -109,7 +58,7 @@ export default function SapphireSearchPage() {
   const [showFilters, setShowFilters] = useState(false)
 
   const filteredSapphires = useMemo(() => {
-    return sampleSapphires.filter((sapphire) => {
+    return sapphires.filter((sapphire) => {
       // Search term filter
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase()
@@ -161,21 +110,19 @@ export default function SapphireSearchPage() {
   }, [filters, searchTerm])
 
   return (
-    <div className="min-h-screen bg-gray-50/30 pt-16">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
-        {/* Header */}
-        <div className="mb-12">
-          <h1 className="text-4xl lg:text-5xl font-light text-gray-900 mb-4 tracking-tight">Sapphires</h1>
-          <p className="text-xl text-gray-600 font-light">
-            Premium sapphires for wholesale — {filteredSapphires.length} stones available
-          </p>
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-vico-primary mb-2">Premium Sapphires</h1>
+          <p className="text-gray-600">Discover our collection of certified natural sapphires</p>
+          <p className="text-sm text-gray-500 mt-2">{filteredSapphires.length} stones available</p>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Filters Sidebar - Desktop */}
           <div className="hidden lg:block lg:w-80 flex-shrink-0">
             <div className="sticky top-24">
-              <GemstoneFilters onFiltersChange={setFilters} gemType="sapphires" />
+              <GemstoneFilters onFiltersChange={setFilters} gemstones={sapphires} gemType="sapphires" />
             </div>
           </div>
 
@@ -228,7 +175,7 @@ export default function SapphireSearchPage() {
             {/* Mobile Filters */}
             {showFilters && (
               <div className="lg:hidden mb-8">
-                <GemstoneFilters onFiltersChange={setFilters} gemType="sapphires" />
+                <GemstoneFilters onFiltersChange={setFilters} gemstones={sapphires} gemType="sapphires" />
               </div>
             )}
 

@@ -6,54 +6,45 @@ import { GemstoneCard } from "@/components/gemstone-card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Search, Grid, List, SlidersHorizontal } from "lucide-react"
+import { supabase } from "@/lib/supabase-client"
 
-// Sample emerald data
-const sampleEmeralds = [
-  {
-    id: "em-001",
-    name: "Colombian Emerald",
-    shape: "Emerald Cut",
-    carat: 2.85,
-    color: "Vivid Green",
-    clarity: "VS",
-    treatment: "Oil Treatment",
-    origin: "Colombia",
-    price: 9500,
-    image: "/placeholder.svg?height=300&width=300&text=Colombian+Emerald",
-    dimensions: "8.5 x 6.8 x 5.2 mm",
-    gemType: "emeralds",
-  },
-  {
-    id: "em-002",
-    name: "Zambian Emerald",
-    shape: "Oval",
-    carat: 3.12,
-    color: "Bluish Green",
-    clarity: "SI",
-    treatment: "Oil Treatment",
-    origin: "Zambia",
-    price: 6800,
-    image: "/placeholder.svg?height=300&width=300&text=Zambian+Emerald",
-    dimensions: "9.1 x 7.2 x 5.8 mm",
-    gemType: "emeralds",
-  },
-  {
-    id: "em-003",
-    name: "Brazilian Emerald",
-    shape: "Cushion",
-    carat: 2.45,
-    color: "Medium Green",
-    clarity: "VS",
-    treatment: "Oil Treatment",
-    origin: "Brazil",
-    price: 4200,
-    image: "/placeholder.svg?height=300&width=300&text=Brazilian+Emerald",
-    dimensions: "8.2 x 7.8 x 5.1 mm",
-    gemType: "emeralds",
-  },
-]
+export const revalidate = 60 // Revalidate every 60 seconds
 
-export default function EmeraldSearchPage() {
+async function getEmeralds() {
+  const { data, error } = await supabase
+    .from("gemstones")
+    .select("*")
+    .eq("gem_type", "emeralds")
+    .order("created_at", { ascending: false })
+
+  if (error) {
+    console.error("Error fetching emeralds:", error)
+    return []
+  }
+
+  return (
+    data?.map((gem) => ({
+      id: gem.id,
+      name: gem.name,
+      gemType: gem.gem_type as "emeralds",
+      shape: gem.shape,
+      carat: Number(gem.carat),
+      color: gem.color,
+      clarity: gem.clarity,
+      treatment: gem.treatment,
+      origin: gem.origin,
+      price: Number(gem.price),
+      dimensions: gem.dimensions || "",
+      description: gem.description || "",
+      image: gem.image || "/placeholder.svg?height=400&width=400",
+      cloudinaryId: gem.cloudinary_id || undefined,
+      specifications: gem.specifications || undefined,
+    })) || []
+  )
+}
+
+export default async function EmeraldsSearchPage() {
+  const emeralds = await getEmeralds()
   const [filters, setFilters] = useState<any>({
     shapes: [],
     caratRange: [0.5, 10],
@@ -67,7 +58,7 @@ export default function EmeraldSearchPage() {
   const [showFilters, setShowFilters] = useState(false)
 
   const filteredEmeralds = useMemo(() => {
-    return sampleEmeralds.filter((emerald) => {
+    return emeralds.filter((emerald) => {
       // Search term filter
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase()
@@ -95,21 +86,19 @@ export default function EmeraldSearchPage() {
   }, [filters, searchTerm])
 
   return (
-    <div className="min-h-screen bg-gray-50/30 pt-16">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
-        {/* Header */}
-        <div className="mb-12">
-          <h1 className="text-4xl lg:text-5xl font-light text-gray-900 mb-4 tracking-tight">Emeralds</h1>
-          <p className="text-xl text-gray-600 font-light">
-            Premium emeralds for wholesale — {filteredEmeralds.length} stones available
-          </p>
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-vico-primary mb-2">Premium Emeralds</h1>
+          <p className="text-gray-600">Discover our collection of certified natural emeralds</p>
+          <p className="text-sm text-gray-500 mt-2">{filteredEmeralds.length} stones available</p>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Filters Sidebar - Desktop */}
           <div className="hidden lg:block lg:w-80 flex-shrink-0">
             <div className="sticky top-24">
-              <GemstoneFilters onFiltersChange={setFilters} gemType="emeralds" />
+              <GemstoneFilters onFiltersChange={setFilters} gemstones={emeralds} gemType="emeralds" />
             </div>
           </div>
 
@@ -162,7 +151,7 @@ export default function EmeraldSearchPage() {
             {/* Mobile Filters */}
             {showFilters && (
               <div className="lg:hidden mb-8">
-                <GemstoneFilters onFiltersChange={setFilters} gemType="emeralds" />
+                <GemstoneFilters gemstones={emeralds} gemType="emeralds" />
               </div>
             )}
 

@@ -6,68 +6,45 @@ import { GemstoneCard } from "@/components/gemstone-card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Search, Grid, List, SlidersHorizontal } from "lucide-react"
+import { supabase } from "@/lib/supabase-client"
 
-// Sample ruby data
-const sampleRubies = [
-  {
-    id: "rub-001",
-    name: "Pigeon Blood Ruby",
-    shape: "Oval",
-    carat: 2.15,
-    color: "Pigeon Blood",
-    clarity: "VS",
-    treatment: "Heated",
-    origin: "Myanmar",
-    price: 12500,
-    image: "/placeholder.svg?height=300&width=300&text=Pigeon+Blood+Ruby",
-    dimensions: "8.1 x 6.2 x 4.5 mm",
-    gemType: "rubies",
-  },
-  {
-    id: "rub-002",
-    name: "Mozambique Ruby",
-    shape: "Cushion",
-    carat: 3.45,
-    color: "Red",
-    clarity: "SI",
-    treatment: "Heated",
-    origin: "Mozambique",
-    price: 8900,
-    image: "/placeholder.svg?height=300&width=300&text=Mozambique+Ruby",
-    dimensions: "9.2 x 8.1 x 5.8 mm",
-    gemType: "rubies",
-  },
-  {
-    id: "rub-003",
-    name: "Thai Ruby",
-    shape: "Round",
-    carat: 1.89,
-    color: "Purplish Red",
-    clarity: "VS",
-    treatment: "Heated",
-    origin: "Thailand",
-    price: 4200,
-    image: "/placeholder.svg?height=300&width=300&text=Thai+Ruby",
-    dimensions: "7.8 x 7.8 x 4.9 mm",
-    gemType: "rubies",
-  },
-  {
-    id: "rub-004",
-    name: "Unheated Ruby",
-    shape: "Pear",
-    carat: 1.67,
-    color: "Red",
-    clarity: "VVS",
-    treatment: "Unheated",
-    origin: "Myanmar",
-    price: 15800,
-    image: "/placeholder.svg?height=300&width=300&text=Unheated+Ruby",
-    dimensions: "8.5 x 6.1 x 4.2 mm",
-    gemType: "rubies",
-  },
-]
+export const revalidate = 60 // Revalidate every 60 seconds
 
-export default function RubySearchPage() {
+async function getRubies() {
+  const { data, error } = await supabase
+    .from("gemstones")
+    .select("*")
+    .eq("gem_type", "rubies")
+    .order("created_at", { ascending: false })
+
+  if (error) {
+    console.error("Error fetching rubies:", error)
+    return []
+  }
+
+  return (
+    data?.map((gem) => ({
+      id: gem.id,
+      name: gem.name,
+      gemType: gem.gem_type as "rubies",
+      shape: gem.shape,
+      carat: Number(gem.carat),
+      color: gem.color,
+      clarity: gem.clarity,
+      treatment: gem.treatment,
+      origin: gem.origin,
+      price: Number(gem.price),
+      dimensions: gem.dimensions || "",
+      description: gem.description || "",
+      image: gem.image || "/placeholder.svg?height=400&width=400",
+      cloudinaryId: gem.cloudinary_id || undefined,
+      specifications: gem.specifications || undefined,
+    })) || []
+  )
+}
+
+export default async function RubiesSearchPage() {
+  const rubies = await getRubies()
   const [filters, setFilters] = useState<any>({
     shapes: [],
     caratRange: [0.5, 10],
@@ -81,7 +58,7 @@ export default function RubySearchPage() {
   const [showFilters, setShowFilters] = useState(false)
 
   const filteredRubies = useMemo(() => {
-    return sampleRubies.filter((ruby) => {
+    return rubies.filter((ruby) => {
       // Search term filter
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase()
@@ -107,21 +84,19 @@ export default function RubySearchPage() {
   }, [filters, searchTerm])
 
   return (
-    <div className="min-h-screen bg-gray-50/30 pt-16">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
-        {/* Header */}
-        <div className="mb-12">
-          <h1 className="text-4xl lg:text-5xl font-light text-gray-900 mb-4 tracking-tight">Rubies</h1>
-          <p className="text-xl text-gray-600 font-light">
-            Premium rubies for wholesale — {filteredRubies.length} stones available
-          </p>
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-vico-primary mb-2">Premium Rubies</h1>
+          <p className="text-gray-600">Discover our collection of certified natural rubies</p>
+          <p className="text-sm text-gray-500 mt-2">{rubies.length} stones available</p>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Filters Sidebar - Desktop */}
           <div className="hidden lg:block lg:w-80 flex-shrink-0">
             <div className="sticky top-24">
-              <GemstoneFilters onFiltersChange={setFilters} gemType="rubies" />
+              <GemstoneFilters onFiltersChange={setFilters} gemstones={rubies} gemType="rubies" />
             </div>
           </div>
 
@@ -174,7 +149,7 @@ export default function RubySearchPage() {
             {/* Mobile Filters */}
             {showFilters && (
               <div className="lg:hidden mb-8">
-                <GemstoneFilters onFiltersChange={setFilters} gemType="rubies" />
+                <GemstoneFilters gemstones={rubies} gemType="rubies" />
               </div>
             )}
 

@@ -48,36 +48,30 @@ export function VicoBulkUpload() {
     setProgress(0)
 
     try {
-      const results = []
-      const total = products.length
-
-      for (let i = 0; i < products.length; i++) {
-        const product = products[i]
-        setProgress(((i + 1) / total) * 100)
-
-        // Here you would save to database
-        // For now, just simulate
-        await new Promise((resolve) => setTimeout(resolve, 100))
-
-        results.push({
-          product: product.name,
-          success: true,
-          id: product.id,
-        })
-      }
-
-      setUploadResult({
-        success: true,
-        total: total,
-        results: results,
+      // Call the actual API endpoint
+      const response = await fetch("/api/vico-bulk-upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ gemstones: products }),
       })
 
-      console.log("Upload complete:", results)
+      const result = await response.json()
+
+      setProgress(100)
+      setUploadResult(result)
+
+      if (result.success) {
+        console.log("Upload complete:", result)
+      } else {
+        console.error("Upload failed:", result)
+      }
     } catch (error) {
       console.error("Upload failed:", error)
       setUploadResult({
         success: false,
-        error: "Upload failed",
+        error: "Upload failed: " + (error instanceof Error ? error.message : "Unknown error"),
       })
     } finally {
       setUploading(false)
@@ -123,10 +117,12 @@ export function VicoBulkUpload() {
               <ol className="list-decimal list-inside space-y-1 ml-2">
                 <li>Click "Load Master CSV" to fetch your inventory from the master file</li>
                 <li>Review the products that were loaded</li>
-                <li>Click "Upload to Database" to import all products</li>
-                <li>Products will be organized by type (Sapphires, Rubies, Emeralds)</li>
+                <li>Click "Upload to Database" to import all products to Supabase</li>
+                <li>Products will appear on your website immediately after upload</li>
               </ol>
-              <p className="text-xs text-blue-700 mt-2">💡 Your CSV contains {products.length} products</p>
+              <p className="text-xs text-blue-700 mt-2">
+                💡 Make sure your Supabase credentials are set in environment variables
+              </p>
             </div>
           </div>
         </CardContent>
@@ -179,9 +175,14 @@ export function VicoBulkUpload() {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span>Step 2: Review Products ({products.length})</span>
-              <Button onClick={handleBulkUpload} disabled={uploading} size="lg">
+              <Button
+                onClick={handleBulkUpload}
+                disabled={uploading}
+                size="lg"
+                className="bg-green-600 hover:bg-green-700"
+              >
                 <Upload className="h-4 w-4 mr-2" />
-                {uploading ? "Uploading..." : `Upload ${products.length} Products`}
+                {uploading ? "Uploading..." : `Upload ${products.length} Products to Database`}
               </Button>
             </CardTitle>
           </CardHeader>
@@ -189,7 +190,9 @@ export function VicoBulkUpload() {
             {uploading && (
               <div className="mb-6">
                 <Progress value={progress} className="w-full mb-2" />
-                <p className="text-sm text-gray-600 text-center">Uploading products... {Math.round(progress)}%</p>
+                <p className="text-sm text-gray-600 text-center">
+                  Uploading products to Supabase... {Math.round(progress)}%
+                </p>
               </div>
             )}
 
@@ -258,12 +261,35 @@ export function VicoBulkUpload() {
           </CardHeader>
           <CardContent>
             {uploadResult.success ? (
-              <Alert className="bg-green-50 border-green-200">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                <AlertDescription>
-                  Successfully uploaded {uploadResult.total} products to the database!
-                </AlertDescription>
-              </Alert>
+              <div className="space-y-4">
+                <Alert className="bg-green-50 border-green-200">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <AlertDescription>
+                    <div className="space-y-2">
+                      <p className="font-semibold">Successfully uploaded products to database!</p>
+                      <div className="text-sm">
+                        <p>✓ Success: {uploadResult.results?.success || 0} products</p>
+                        {uploadResult.results?.failed > 0 && (
+                          <p className="text-red-600">✗ Failed: {uploadResult.results.failed} products</p>
+                        )}
+                      </div>
+                    </div>
+                  </AlertDescription>
+                </Alert>
+
+                {uploadResult.results?.errors && uploadResult.results.errors.length > 0 && (
+                  <div className="mt-4">
+                    <h4 className="font-semibold text-sm mb-2">Errors:</h4>
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                      {uploadResult.results.errors.map((err: any, i: number) => (
+                        <div key={i} className="text-xs bg-red-50 p-2 rounded border border-red-200">
+                          <span className="font-mono">{err.id}</span>: {err.error}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             ) : (
               <Alert className="bg-red-50 border-red-200">
                 <AlertCircle className="h-4 w-4 text-red-600" />
