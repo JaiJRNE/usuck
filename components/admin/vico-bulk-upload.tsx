@@ -21,16 +21,33 @@ export function VicoBulkUpload() {
     try {
       const csvUrl = "https://blobs.vusercontent.net/blob/MASTER%20-%20MASTER-woEvsnQut9jiVfotLuS9msTSWoK8bK.csv"
 
+      console.log("[v0] Loading master CSV from:", csvUrl)
+
       const response = await fetch(csvUrl)
       const text = await response.text()
 
+      console.log("[v0] CSV loaded, length:", text.length, "characters")
+
       const parsedProducts = parseVicoCSV(text)
+
+      console.log("[v0] Parsed products:", {
+        total: parsedProducts.length,
+        byType: parsedProducts.reduce(
+          (acc, p) => {
+            acc[p.gemType] = (acc[p.gemType] || 0) + 1
+            return acc
+          },
+          {} as Record<string, number>,
+        ),
+        sample: parsedProducts[0],
+      })
+
       setProducts(parsedProducts)
       setUploadResult(null)
 
-      console.log(`Loaded ${parsedProducts.length} products from master CSV`)
+      console.log(`[v0] Loaded ${parsedProducts.length} products from master CSV`)
     } catch (error) {
-      console.error("Failed to load master CSV:", error)
+      console.error("[v0] Failed to load master CSV:", error)
       alert("Failed to load master CSV. Please check the console for details.")
     } finally {
       setLoading(false)
@@ -47,6 +64,8 @@ export function VicoBulkUpload() {
     setProgress(0)
 
     try {
+      console.log("[v0] Starting bulk upload of", products.length, "products")
+
       // Call the actual API endpoint
       const response = await fetch("/api/vico-bulk-upload", {
         method: "POST",
@@ -58,16 +77,18 @@ export function VicoBulkUpload() {
 
       const result = await response.json()
 
+      console.log("[v0] Upload response:", result)
+
       setProgress(100)
       setUploadResult(result)
 
       if (result.success) {
-        console.log("Upload complete:", result)
+        console.log("[v0] Upload complete:", result)
       } else {
-        console.error("Upload failed:", result)
+        console.error("[v0] Upload failed:", result)
       }
     } catch (error) {
-      console.error("Upload failed:", error)
+      console.error("[v0] Upload failed:", error)
       setUploadResult({
         success: false,
         error: "Upload failed: " + (error instanceof Error ? error.message : "Unknown error"),

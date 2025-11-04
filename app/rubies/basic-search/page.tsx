@@ -4,14 +4,22 @@ import { GemstoneSearchClient } from "@/components/gemstone-search-client"
 export const revalidate = 60
 
 async function getRubies() {
+  console.log("[v0] Fetching rubies from database...")
+
   const { data, error } = await supabase
     .from("gemstones")
     .select("*")
     .eq("gem_type", "rubies")
     .order("created_at", { ascending: false })
 
+  console.log("[v0] Rubies query result:", {
+    dataCount: data?.length || 0,
+    error: error?.message,
+    sampleData: data?.[0],
+  })
+
   if (error) {
-    console.error("Error fetching rubies:", error)
+    console.error("[v0] Error fetching rubies:", error)
     return []
   }
 
@@ -38,6 +46,8 @@ async function getRubies() {
 
 export default async function RubiesSearchPage() {
   const rubies = await getRubies()
+
+  console.log("[v0] Rendering rubies page with", rubies.length, "stones")
 
   return (
     <GemstoneSearchClient

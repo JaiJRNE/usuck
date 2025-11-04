@@ -4,14 +4,22 @@ import { GemstoneSearchClient } from "@/components/gemstone-search-client"
 export const revalidate = 60
 
 async function getEmeralds() {
+  console.log("[v0] Fetching emeralds from database...")
+
   const { data, error } = await supabase
     .from("gemstones")
     .select("*")
     .eq("gem_type", "emeralds")
     .order("created_at", { ascending: false })
 
+  console.log("[v0] Emeralds query result:", {
+    dataCount: data?.length || 0,
+    error: error?.message,
+    sampleData: data?.[0],
+  })
+
   if (error) {
-    console.error("Error fetching emeralds:", error)
+    console.error("[v0] Error fetching emeralds:", error)
     return []
   }
 
@@ -38,6 +46,8 @@ async function getEmeralds() {
 
 export default async function EmeraldsSearchPage() {
   const emeralds = await getEmeralds()
+
+  console.log("[v0] Rendering emeralds page with", emeralds.length, "stones")
 
   return (
     <GemstoneSearchClient

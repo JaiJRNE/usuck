@@ -4,14 +4,22 @@ import { GemstoneSearchClient } from "@/components/gemstone-search-client"
 export const revalidate = 60
 
 async function getSapphires() {
+  console.log("[v0] Fetching sapphires from database...")
+
   const { data, error } = await supabase
     .from("gemstones")
     .select("*")
     .eq("gem_type", "sapphires")
     .order("created_at", { ascending: false })
 
+  console.log("[v0] Sapphires query result:", {
+    dataCount: data?.length || 0,
+    error: error?.message,
+    sampleData: data?.[0],
+  })
+
   if (error) {
-    console.error("Error fetching sapphires:", error)
+    console.error("[v0] Error fetching sapphires:", error)
     return []
   }
 
@@ -38,6 +46,8 @@ async function getSapphires() {
 
 export default async function SapphiresSearchPage() {
   const sapphires = await getSapphires()
+
+  console.log("[v0] Rendering sapphires page with", sapphires.length, "stones")
 
   return (
     <GemstoneSearchClient
