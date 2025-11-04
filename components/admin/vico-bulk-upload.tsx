@@ -19,7 +19,7 @@ export function VicoBulkUpload() {
   const loadMasterCSV = async () => {
     setLoading(true)
     try {
-      const csvUrl = "https://blobs.vusercontent.net/blob/MASTER%20-%20MASTER-w49PLe40rXJy0nOgcjiqXT2hFsotA6.csv"
+      const csvUrl = "https://blobs.vusercontent.net/blob/MASTER%20-%20MASTER-5l7nPp06xZLPcTsAcdkk9Qbl3Dl4qh.csv"
 
       console.log("[v0] Loading master CSV from:", csvUrl)
 
