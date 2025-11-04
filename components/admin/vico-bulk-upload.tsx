@@ -19,7 +19,7 @@ export function VicoBulkUpload() {
   const loadMasterCSV = async () => {
     setLoading(true)
     try {
-      const csvUrl = "https://blobs.vusercontent.net/blob/MASTER%20-%20MASTER-woEvsnQut9jiVfotLuS9msTSWoK8bK.csv"
+      const csvUrl = "https://blobs.vusercontent.net/blob/MASTER%20-%20MASTER-w49PLe40rXJy0nOgcjiqXT2hFsotA6.csv"
 
       console.log("[v0] Loading master CSV from:", csvUrl)
 
@@ -27,6 +27,7 @@ export function VicoBulkUpload() {
       const text = await response.text()
 
       console.log("[v0] CSV loaded, length:", text.length, "characters")
+      console.log("[v0] First 500 chars:", text.substring(0, 500))
 
       const parsedProducts = parseVicoCSV(text)
 
