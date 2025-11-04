@@ -3,21 +3,22 @@ import type { Gemstone } from "./types/gemstone"
 export interface VicoCSVRow {
   id: string // Column 0: S-1872
   type: string // Column 1: SAPPHIRE
-  shape: string // Column 3: OVAL
-  carat: string // Column 4: 4.11
-  color: string // Column 5: ROYAL BLUE
-  clarity: string // Column 6: VS
-  treatment: string // Column 7: HEATED
-  origin: string // Column 8: SRI LANKA
-  dimensions: string // Column 10: 10X8.51X5.08
-  videoLink1?: string // Column 12: Google Drive link
-  videoLink2?: string // Column 13: Google Drive link
+  shape: string // Column 2: OVAL
+  carat: string // Column 3: 4.11
+  color: string // Column 4: ROYAL BLUE
+  clarity: string // Column 5: VS
+  treatment: string // Column 6: HEATED
+  origin: string // Column 7: SRI LANKA
+  price: string // Column 8: 0
+  dimensions: string // Column 9: 10X8.51X5.08
+  description: string // Column 10: Beautiful royal blue sapphire
+  imageLink?: string // Column 11: Google Drive link
+  videoLink?: string // Column 12: Google Drive link
 }
 
 export function parseVicoCSV(csvContent: string): Gemstone[] {
   const lines = csvContent.split("\n").filter((line) => line.trim())
 
-  // Skip header row (first row)
   const dataLines = lines.slice(1)
 
   const gemstones: Gemstone[] = []
@@ -26,18 +27,20 @@ export function parseVicoCSV(csvContent: string): Gemstone[] {
     try {
       const values = parseCSVLine(line)
 
-      // Map CSV columns to gemstone object
+      // New format: id, name, shape, carat, color, clarity, treatment, origin, price, dimensions, description, Image Link 1, Video Link 1
       const id = values[0]?.trim() || ""
-      const typeRaw = values[1]?.trim().toUpperCase() || ""
-      const shape = values[3]?.trim() || ""
-      const caratStr = values[4]?.trim() || "0"
-      const color = values[5]?.trim() || ""
-      const clarity = values[6]?.trim() || ""
-      const treatment = values[7]?.trim() || ""
-      const origin = values[8]?.trim() || ""
-      const dimensions = values[10]?.trim() || ""
-      const videoLink1 = values[12]?.trim() || ""
-      const videoLink2 = values[13]?.trim() || ""
+      const typeRaw = values[1]?.trim().toUpperCase() || "" // Column 1: RUBY, SAPPHIRE, etc.
+      const shape = values[2]?.trim() || "" // Column 2: shape
+      const caratStr = values[3]?.trim() || "0" // Column 3: carat
+      const color = values[4]?.trim() || "" // Column 4: color
+      const clarity = values[5]?.trim() || "" // Column 5: clarity
+      const treatment = values[6]?.trim() || "" // Column 6: treatment
+      const origin = values[7]?.trim() || "" // Column 7: origin
+      const priceStr = values[8]?.trim() || "0" // Column 8: price
+      const dimensions = values[9]?.trim() || "" // Column 9: dimensions
+      const description = values[10]?.trim() || "" // Column 10: description
+      const imageLink = values[11]?.trim() || "" // Column 11: Image Link 1
+      const videoLink = values[12]?.trim() || "" // Column 12: Video Link 1
 
       // Skip if no ID
       if (!id) continue
@@ -49,11 +52,16 @@ export function parseVicoCSV(csvContent: string): Gemstone[] {
       // Parse carat as number
       const carat = Number.parseFloat(caratStr) || 0
 
+      // Parse price as number
+      const price = Number.parseFloat(priceStr) || 0
+
       // Create gemstone name
       const name = `${origin} ${color} ${typeRaw} ${carat}ct`
 
-      // Create description
-      const description = `${shape} cut ${color.toLowerCase()} ${typeRaw.toLowerCase()} from ${origin}. ${treatment} treatment. ${dimensions} mm.`
+      // Use provided description or create one
+      const finalDescription =
+        description ||
+        `${shape} cut ${color.toLowerCase()} ${typeRaw.toLowerCase()} from ${origin}. ${treatment} treatment. ${dimensions} mm.`
 
       const gemstone: Gemstone = {
         id,
@@ -65,12 +73,12 @@ export function parseVicoCSV(csvContent: string): Gemstone[] {
         clarity,
         treatment,
         origin,
-        price: 0, // Price not in CSV, will be added manually
+        price,
         dimensions,
-        description,
+        description: finalDescription,
         specifications: {
-          "Video 1": videoLink1,
-          "Video 2": videoLink2,
+          "Image Link": imageLink,
+          "Video Link": videoLink,
           Shape: shape,
           Treatment: treatment,
           Origin: origin,
@@ -121,35 +129,33 @@ function parseCSVLine(line: string): string[] {
 
 export function generateVicoCSVTemplate(): string {
   const headers = [
-    "ID",
-    "Type",
-    "gemType",
-    "Shape",
-    "Carat",
-    "Color",
-    "Clarity",
-    "Treatment",
-    "Origin",
+    "id",
+    "name",
+    "shape",
+    "carat",
+    "color",
+    "clarity",
+    "treatment",
+    "origin",
     "price",
-    "Dimensions",
+    "dimensions",
     "description",
+    "Image Link 1",
     "Video Link 1",
-    "Video Link 2",
   ]
 
   const sampleData = [
     "S-1872",
     "SAPPHIRE",
-    "gemType",
     "OVAL",
     "4.11",
     "ROYAL BLUE",
     "VS",
     "HEATED",
     "SRI LANKA",
-    "price",
+    "0",
     "10X8.51X5.08",
-    "description",
+    "Beautiful royal blue sapphire",
     "https://drive.google.com/file/d/xxxxx",
     "https://drive.google.com/file/d/yyyyy",
   ]

@@ -19,8 +19,7 @@ export function VicoBulkUpload() {
   const loadMasterCSV = async () => {
     setLoading(true)
     try {
-      const csvUrl =
-        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/VICO%20Inventory%20-%20MASTER-dDKdbjtsrlUxE4iaDJmBFyvsqev47p.csv"
+      const csvUrl = "https://blobs.vusercontent.net/blob/MASTER%20-%20MASTER-woEvsnQut9jiVfotLuS9msTSWoK8bK.csv"
 
       const response = await fetch(csvUrl)
       const text = await response.text()
