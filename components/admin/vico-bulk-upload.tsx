@@ -5,29 +5,57 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Download, Upload, FileText, CheckCircle, AlertCircle, Info, ExternalLink } from "lucide-react"
+import { Download, Upload, FileText, CheckCircle, AlertCircle, Info, Database } from "lucide-react"
 import { parseVicoCSV, generateVicoCSVTemplate } from "@/lib/vico-csv-parser"
 import type { Gemstone } from "@/lib/types/gemstone"
 
 export function VicoBulkUpload() {
   const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [testing, setTesting] = useState(false)
   const [progress, setProgress] = useState(0)
   const [products, setProducts] = useState<Gemstone[]>([])
   const [uploadResult, setUploadResult] = useState<any>(null)
+  const [testResult, setTestResult] = useState<any>(null)
+
+  const csvUrl = "https://blob.v0.app/vKojd.csv"
+
+  const testDatabase = async () => {
+    setTesting(true)
+    setTestResult(null)
+    try {
+      console.log("[v0] Testing database connection...")
+      const response = await fetch("/api/test-db")
+      const result = await response.json()
+      console.log("[v0] Database test result:", result)
+      setTestResult(result)
+    } catch (error) {
+      console.error("[v0] Database test failed:", error)
+      setTestResult({
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      })
+    } finally {
+      setTesting(false)
+    }
+  }
 
   const loadMasterCSV = async () => {
     setLoading(true)
+    setUploadResult(null)
     try {
-      const csvUrl = "https://blobs.vusercontent.net/blob/MASTER%20-%20MASTER-5l7nPp06xZLPcTsAcdkk9Qbl3Dl4qh.csv"
-
       console.log("[v0] Loading master CSV from:", csvUrl)
 
       const response = await fetch(csvUrl)
+      if (!response.ok) {
+        throw new Error(`Failed to fetch CSV: ${response.status} ${response.statusText}`)
+      }
+
       const text = await response.text()
 
-      console.log("[v0] CSV loaded, length:", text.length, "characters")
-      console.log("[v0] First 500 chars:", text.substring(0, 500))
+      console.log("[v0] CSV loaded successfully")
+      console.log("[v0] CSV length:", text.length, "characters")
+      console.log("[v0] First 200 chars:", text.substring(0, 200))
 
       const parsedProducts = parseVicoCSV(text)
 
@@ -40,16 +68,20 @@ export function VicoBulkUpload() {
           },
           {} as Record<string, number>,
         ),
-        sample: parsedProducts[0],
+        firstProduct: parsedProducts[0],
       })
 
-      setProducts(parsedProducts)
-      setUploadResult(null)
+      if (parsedProducts.length === 0) {
+        throw new Error("No products found in CSV. Please check the CSV format.")
+      }
 
-      console.log(`[v0] Loaded ${parsedProducts.length} products from master CSV`)
+      setProducts(parsedProducts)
+      alert(`Successfully loaded ${parsedProducts.length} products from CSV!`)
+
+      console.log(`[v0] ✓ Loaded ${parsedProducts.length} products from master CSV`)
     } catch (error) {
       console.error("[v0] Failed to load master CSV:", error)
-      alert("Failed to load master CSV. Please check the console for details.")
+      alert(`Failed to load CSV: ${error instanceof Error ? error.message : "Unknown error"}`)
     } finally {
       setLoading(false)
     }
@@ -57,15 +89,26 @@ export function VicoBulkUpload() {
 
   const handleBulkUpload = async () => {
     if (products.length === 0) {
-      alert("Please load products first")
+      alert("Please load products first by clicking 'Load Master CSV'")
       return
     }
 
+    const confirmed = confirm(
+      `Are you sure you want to upload ${products.length} products to the database? This will overwrite any existing products with the same IDs.`,
+    )
+
+    if (!confirmed) return
+
     setUploading(true)
     setProgress(0)
+    setUploadResult(null)
 
     try {
+      console.log("[v0] ========================================")
       console.log("[v0] Starting bulk upload of", products.length, "products")
+      console.log("[v0] ========================================")
+
+      setProgress(10)
 
       // Call the actual API endpoint
       const response = await fetch("/api/vico-bulk-upload", {
@@ -76,38 +119,39 @@ export function VicoBulkUpload() {
         body: JSON.stringify({ gemstones: products }),
       })
 
+      setProgress(50)
+
+      if (!response.ok) {
+        throw new Error(`Upload failed: ${response.status} ${response.statusText}`)
+      }
+
       const result = await response.json()
 
+      console.log("[v0] ========================================")
       console.log("[v0] Upload response:", result)
+      console.log("[v0] ========================================")
 
       setProgress(100)
       setUploadResult(result)
 
       if (result.success) {
-        console.log("[v0] Upload complete:", result)
+        alert(
+          `Upload complete! ${result.results?.success || 0} products uploaded successfully. ${result.results?.failed || 0} failed.`,
+        )
       } else {
-        console.error("[v0] Upload failed:", result)
+        alert(`Upload failed: ${result.error}`)
       }
     } catch (error) {
       console.error("[v0] Upload failed:", error)
+      const errorMessage = error instanceof Error ? error.message : "Unknown error"
       setUploadResult({
         success: false,
-        error: "Upload failed: " + (error instanceof Error ? error.message : "Unknown error"),
+        error: errorMessage,
       })
+      alert(`Upload failed: ${errorMessage}`)
     } finally {
       setUploading(false)
     }
-  }
-
-  const downloadTemplate = () => {
-    const template = generateVicoCSVTemplate()
-    const blob = new Blob([template], { type: "text/csv" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = "vico-template.csv"
-    a.click()
-    URL.revokeObjectURL(url)
   }
 
   // Group products by type
@@ -134,18 +178,67 @@ export function VicoBulkUpload() {
           <div className="flex items-start space-x-3">
             <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
             <div className="space-y-2 text-sm text-blue-900">
-              <p className="font-semibold">How it works:</p>
+              <p className="font-semibold">How to upload your products:</p>
               <ol className="list-decimal list-inside space-y-1 ml-2">
-                <li>Click "Load Master CSV" to fetch your inventory from the master file</li>
-                <li>Review the products that were loaded</li>
-                <li>Click "Upload to Database" to import all products to Supabase</li>
-                <li>Products will appear on your website immediately after upload</li>
+                <li>
+                  <strong>Test Database</strong> - Click "Test Database Connection" to verify everything is working
+                </li>
+                <li>
+                  <strong>Load CSV</strong> - Click "Load Master CSV" to fetch your inventory
+                </li>
+                <li>
+                  <strong>Review</strong> - Check the products that were loaded
+                </li>
+                <li>
+                  <strong>Upload</strong> - Click "Upload to Database" to save all products
+                </li>
+                <li>
+                  <strong>Verify</strong> - Visit your Sapphires/Rubies/Emeralds pages to see the products
+                </li>
               </ol>
-              <p className="text-xs text-blue-700 mt-2">
-                💡 Make sure your Supabase credentials are set in environment variables
-              </p>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Database Test */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Database className="h-5 w-5 mr-2 text-purple-600" />
+            Step 0: Test Database Connection
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-gray-600">Verify that the database connection is working correctly</p>
+
+          <Button onClick={testDatabase} disabled={testing} variant="outline">
+            <Database className="h-4 w-4 mr-2" />
+            {testing ? "Testing..." : "Test Database Connection"}
+          </Button>
+
+          {testResult && (
+            <Alert className={testResult.success ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"}>
+              {testResult.success ? (
+                <CheckCircle className="h-4 w-4 text-green-600" />
+              ) : (
+                <AlertCircle className="h-4 w-4 text-red-600" />
+              )}
+              <AlertDescription>
+                {testResult.success ? (
+                  <div>
+                    <p className="font-semibold text-green-900">Database connection successful!</p>
+                    <p className="text-xs text-green-700 mt-1">You can proceed with uploading products.</p>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="font-semibold text-red-900">Database connection failed</p>
+                    <p className="text-xs text-red-700 mt-1">{testResult.error}</p>
+                  </div>
+                )}
+              </AlertDescription>
+            </Alert>
+          )}
         </CardContent>
       </Card>
 
@@ -176,8 +269,8 @@ export function VicoBulkUpload() {
             <Alert className="bg-green-50 border-green-200">
               <CheckCircle className="h-4 w-4 text-green-600" />
               <AlertDescription>
-                ✓ Loaded {products.length} products
-                <div className="mt-2 text-xs space-y-1">
+                <p className="font-semibold text-green-900">Loaded {products.length} products</p>
+                <div className="mt-2 text-xs space-y-1 text-green-700">
                   {Object.entries(productsByType).map(([type, items]) => (
                     <div key={type}>
                       • {type}: {items.length} products
@@ -224,7 +317,7 @@ export function VicoBulkUpload() {
                     {type} ({items.length})
                   </h3>
                   <div className="grid gap-3">
-                    {items.slice(0, 10).map((product) => (
+                    {items.slice(0, 5).map((product) => (
                       <Card key={product.id} className="bg-gray-50">
                         <CardContent className="p-4">
                           <div className="flex justify-between items-start">
@@ -237,26 +330,16 @@ export function VicoBulkUpload() {
                                 {product.carat}ct • {product.shape} • {product.color} • {product.clarity}
                               </div>
                               <div className="text-xs text-gray-500">
-                                {product.treatment} • {product.origin} • {product.dimensions}
+                                {product.treatment} • {product.origin}
                               </div>
                             </div>
-                            {product.specifications?.["Video 1"] && (
-                              <a
-                                href={product.specifications["Video 1"]}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-700"
-                              >
-                                <ExternalLink className="h-4 w-4" />
-                              </a>
-                            )}
                           </div>
                         </CardContent>
                       </Card>
                     ))}
-                    {items.length > 10 && (
+                    {items.length > 5 && (
                       <p className="text-sm text-gray-500 text-center">
-                        ... and {items.length - 10} more {type}
+                        ... and {items.length - 5} more {type}
                       </p>
                     )}
                   </div>
@@ -287,13 +370,16 @@ export function VicoBulkUpload() {
                   <CheckCircle className="h-4 w-4 text-green-600" />
                   <AlertDescription>
                     <div className="space-y-2">
-                      <p className="font-semibold">Successfully uploaded products to database!</p>
-                      <div className="text-sm">
+                      <p className="font-semibold text-green-900">Successfully uploaded products to database!</p>
+                      <div className="text-sm text-green-700">
                         <p>✓ Success: {uploadResult.results?.success || 0} products</p>
                         {uploadResult.results?.failed > 0 && (
                           <p className="text-red-600">✗ Failed: {uploadResult.results.failed} products</p>
                         )}
                       </div>
+                      <p className="text-xs text-green-600 mt-2">
+                        Your products are now live! Visit the Sapphires, Rubies, or Emeralds pages to see them.
+                      </p>
                     </div>
                   </AlertDescription>
                 </Alert>
@@ -314,7 +400,10 @@ export function VicoBulkUpload() {
             ) : (
               <Alert className="bg-red-50 border-red-200">
                 <AlertCircle className="h-4 w-4 text-red-600" />
-                <AlertDescription>Upload failed: {uploadResult.error}</AlertDescription>
+                <AlertDescription>
+                  <p className="font-semibold text-red-900">Upload failed</p>
+                  <p className="text-sm text-red-700 mt-1">{uploadResult.error}</p>
+                </AlertDescription>
               </Alert>
             )}
           </CardContent>
@@ -322,4 +411,15 @@ export function VicoBulkUpload() {
       )}
     </div>
   )
+
+  function downloadTemplate() {
+    const template = generateVicoCSVTemplate()
+    const blob = new Blob([template], { type: "text/csv" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = "vico-template.csv"
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 }
