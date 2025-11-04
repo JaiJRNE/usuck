@@ -1,12 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { supabase } from "@/lib/supabase-client"
+import { supabaseAdmin } from "@/lib/supabase-admin"
 import type { Gemstone } from "@/lib/types/gemstone"
 
 export async function POST(request: NextRequest) {
   try {
     const { gemstones }: { gemstones: Gemstone[] } = await request.json()
 
-    console.log(`Processing ${gemstones.length} gemstones...`)
+    console.log("[v0] Starting bulk upload of", gemstones.length, "gemstones")
 
     const results = {
       success: 0,
@@ -41,23 +41,25 @@ export async function POST(request: NextRequest) {
             updated_at: new Date().toISOString(),
           }
 
-          // Upsert to handle duplicates
-          const { error } = await supabase.from("gemstones").upsert(dbGemstone, {
+          console.log("[v0] Inserting gemstone:", gemstone.id, "type:", gemstone.gemType)
+
+          const { error } = await supabaseAdmin.from("gemstones").upsert(dbGemstone, {
             onConflict: "id",
           })
 
           if (error) {
-            console.error(`Failed to insert ${gemstone.id}:`, error)
+            console.error(`[v0] Failed to insert ${gemstone.id}:`, error)
             results.failed++
             results.errors.push({
               id: gemstone.id,
               error: error.message,
             })
           } else {
+            console.log("[v0] Successfully inserted:", gemstone.id)
             results.success++
           }
         } catch (error) {
-          console.error(`Error processing ${gemstone.id}:`, error)
+          console.error(`[v0] Error processing ${gemstone.id}:`, error)
           results.failed++
           results.errors.push({
             id: gemstone.id,
@@ -70,7 +72,7 @@ export async function POST(request: NextRequest) {
       await new Promise((resolve) => setTimeout(resolve, 100))
     }
 
-    console.log(`Upload complete: ${results.success} success, ${results.failed} failed`)
+    console.log("[v0] Upload complete:", results.success, "success,", results.failed, "failed")
 
     return NextResponse.json({
       success: true,
@@ -78,7 +80,7 @@ export async function POST(request: NextRequest) {
       results,
     })
   } catch (error) {
-    console.error("Bulk upload error:", error)
+    console.error("[v0] Bulk upload error:", error)
     return NextResponse.json(
       {
         success: false,
