@@ -2,14 +2,13 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Menu, X, ChevronDown, Sparkles } from "lucide-react"
+import { Menu, X, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const [gemstonesOpen, setGemstonesOpen] = useState(false)
-  const [adminOpen, setAdminOpen] = useState(false)
 
   return (
     <nav className="bg-white shadow-sm sticky top-0 z-50">
@@ -73,51 +72,6 @@ export function Navigation() {
               Contact
             </Link>
 
-            {/* Admin Dropdown - Always visible */}
-            <div className="relative group">
-              <button
-                className="flex items-center text-gray-700 hover:text-vico-primary transition-colors"
-                onMouseEnter={() => setAdminOpen(true)}
-                onMouseLeave={() => setAdminOpen(false)}
-              >
-                Admin
-                <ChevronDown className="ml-1 h-4 w-4" />
-              </button>
-
-              {adminOpen && (
-                <div
-                  className="absolute top-full right-0 mt-2 w-56 bg-white rounded-lg shadow-lg py-2"
-                  onMouseEnter={() => setAdminOpen(true)}
-                  onMouseLeave={() => setAdminOpen(false)}
-                >
-                  <Link
-                    href="/admin/vico-upload"
-                    className="block px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-vico-primary"
-                  >
-                    <div className="flex items-center">
-                      <Sparkles className="h-4 w-4 mr-2" />
-                      <div>
-                        <div className="font-medium">VICO Master Upload</div>
-                        <div className="text-xs text-gray-500">Upload from master CSV</div>
-                      </div>
-                    </div>
-                  </Link>
-                  <Link
-                    href="/admin/bulk-products"
-                    className="block px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-vico-primary"
-                  >
-                    Bulk Upload
-                  </Link>
-                  <Link
-                    href="/admin/add-product"
-                    className="block px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-vico-primary"
-                  >
-                    Add Single Product
-                  </Link>
-                </div>
-              )}
-            </div>
-
             <Button asChild className="bg-vico-primary hover:bg-vico-primary-light text-white rounded-full">
               <Link href="/contact">Get Quote</Link>
             </Button>
@@ -150,17 +104,6 @@ export function Navigation() {
             <Link href="/contact" className="block py-2 text-gray-700 hover:text-vico-primary">
               Contact
             </Link>
-            <div className="pt-2 border-t">
-              <Link href="/admin/vico-upload" className="block py-2 text-gray-700 hover:text-vico-primary font-medium">
-                VICO Master Upload
-              </Link>
-              <Link href="/admin/bulk-products" className="block py-2 text-gray-700 hover:text-vico-primary">
-                Bulk Upload
-              </Link>
-              <Link href="/admin/add-product" className="block py-2 text-gray-700 hover:text-vico-primary">
-                Add Product
-              </Link>
-            </div>
             <Button asChild className="w-full mt-4 bg-vico-primary hover:bg-vico-primary-light text-white">
               <Link href="/contact">Get Quote</Link>
             </Button>
